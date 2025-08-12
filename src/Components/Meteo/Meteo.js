@@ -109,7 +109,7 @@ export default function Meteo() {
             if (error.response && error.response.status === 404) {
               alert("Erreur : Donné temporel non trouvé");
             } else {
-              alert(`Une erreur s\'est produite : ` + error.message);
+              alert(`Une erreur s'est produite : ` + error.message);
             }
           });
       }
