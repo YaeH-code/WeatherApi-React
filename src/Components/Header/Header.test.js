@@ -1,41 +1,45 @@
-// import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-// import { Provider } from 'react-redux';
-// import Header from './Header';
-// import { setLang } from '../../redux/langSlice';
-// import { store } from '../../redux/store'
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { Provider } from "react-redux";
+import Header from "./Header";
+import { setLang } from "../../redux/langSlice";
+import { store } from "../../redux/store";
+import { act } from "react";
 
-// function Wrapper(){ 
-//     return <Provider store={store}><Header/></Provider>
-// }
+function Wrapper() {
+  return (
+    <Provider store={store}>
+      <Header />
+    </Provider>
+  );
+}
 
-// describe('Header component', () => {
- 
+describe("Header component", () => {
+  test("renders the component with the correct title", async () => {
+    render(Wrapper());
 
-//   test('renders the component with the correct title',async () => {
-//     render(Wrapper())
+    expect(screen.getByText("Application météo")).toBeInTheDocument();
 
-//     expect(screen.getByText('Application météo')).toBeInTheDocument()
+    await act(async () => {
+      store.dispatch(setLang("en"));
+    });
 
-//     store.dispatch(setLang('en'))
+    await waitFor(() => {
+      expect(screen.getByText("Weather Application")).toBeInTheDocument();
+    });
+  });
 
-//     waitFor(()=>{
-//       expect(screen.getByText('Weather Application')).toBeInTheDocument()
-//     })
+  test("changes the language when clicked on the Lang component", () => {
+    render(Wrapper());
 
-//   });
+    const langFR = screen.getByText("FR");
+    const langEN = screen.getByText("EN");
 
-//   test('changes the language when clicked on the Lang component', () => {
-//     render(Wrapper())
+    expect(langFR).toHaveStyle({ opacity: "1" });
+    expect(langEN).toHaveStyle({ opacity: "0.4" });
 
-//     const langFR = screen.getByText('FR')
-//     const langEN = screen.getByText('EN')
+    fireEvent.click(langEN);
 
-//     expect(langFR).toHaveStyle({ opacity: '1' })
-//     expect(langEN).toHaveStyle({ opacity: '0.4' })
-
-//     fireEvent.click(langEN)
-
-//     expect(langFR).toHaveStyle({ opacity: '0.4' })
-//     expect(langEN).toHaveStyle({ opacity: '1' })
-//   });
-// });
+    expect(langFR).toHaveStyle({ opacity: "0.4" });
+    expect(langEN).toHaveStyle({ opacity: "1" });
+  });
+});

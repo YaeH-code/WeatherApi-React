@@ -1,65 +1,67 @@
-// import { render, screen, waitFor } from '@testing-library/react';
-// import axios from 'axios';
-// import Meteo from './Meteo';
-// import { Provider } from 'react-redux';
-// import { store } from '../../redux/store';
+import { render, screen, waitFor } from "@testing-library/react";
+import axios from "axios";
+import Meteo from "./Meteo";
+import { Provider } from "react-redux";
+import { store } from "../../redux/store";
 
-// function Wrapper(){
-//     return <Provider store={store}><Meteo/></Provider>
-// }
+function Wrapper() {
+  return (
+    <Provider store={store}>
+      <Meteo />
+    </Provider>
+  );
+}
 
-// jest.mock('axios');
+jest.mock("axios");
 
-// describe('Meteo component', () => {
+describe("Meteo component", () => {
+  test("renders the component with weather data", async () => {
+    axios.get.mockResolvedValue({
+      data: {
+        name: "Paris",
+        main: { temp: 25 },
+        weather: [{ description: "sunny" }],
+        coord: { lon: 10, lat: 10 },
+      },
+    });
+    render(Wrapper());
 
-//     test('renders the component with weather data', async () => {
-//         axios.get.mockResolvedValue({data : {
-//             name : 'Paris',
-//             main : { temp : 25} ,
-//             weather : [{description : 'sunny'}],
-//             coord : {lon : 10, lat : 10}   
-//         }})
-//         render(Wrapper());
+    await screen.findByText("Paris");
 
+    expect(screen.getByText("Paris")).toBeInTheDocument();
+  });
 
-//         await screen.findByText('Paris')
+  test("renders the component with error message when city is not found", async () => {
+    axios.get.mockRejectedValue({ response: { status: 404 } });
 
-//         expect(screen.getByText('Paris')).toBeInTheDocument()
+    let alertMessage = "";
 
-//     })
+    jest.spyOn(window, "alert").mockImplementation((message) => {
+      alertMessage = message;
+    });
 
-//   test('renders the component with error message when city is not found', async () => {
-//     axios.get.mockRejectedValue({ response: { status: 404 } });
+    render(Wrapper());
 
-//     let alertMessage = ''
+    await waitFor(() => {
+      expect(alertMessage).toBe("Erreur : Ville non trouvée");
+    });
 
-//     jest.spyOn(window, 'alert').mockImplementation(message => {
-//         alertMessage = message;
-//     });
+    window.alert.mockRestore();
+  });
 
-//     render(Wrapper());   
+  test("renders the component with error message when an error occurs", async () => {
+    axios.get.mockRejectedValue({ message: "Error Message" });
 
-//     await waitFor(()=>{
-//         expect(alertMessage).toBe('Erreur : Ville non trouvée')
-//     })
+    let alertMessage = "";
 
-//     window.alert.mockRestore()
-//   });
+    jest.spyOn(window, "alert").mockImplementation((message) => {
+      alertMessage = message;
+    });
 
-//   test('renders the component with error message when an error occurs', async () => {
-//     axios.get.mockRejectedValue({message: 'Error Message'});
+    render(Wrapper());
 
-//     let alertMessage = ''
-
-//     jest.spyOn(window, 'alert').mockImplementation(message => {
-//         alertMessage = message
-//     })
-
-//     render(Wrapper())
-
-//     await waitFor(() => {
-//         expect(alertMessage).toBe('Une erreur s\'est produite: Error Message')
-//     });
-
-//   });
-// });
+    await waitFor(() => {
+      expect(alertMessage).toBe("Une erreur s'est produite: Error Message");
+    });
+  });
+});
